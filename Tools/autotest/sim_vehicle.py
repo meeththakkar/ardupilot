@@ -615,7 +615,10 @@ def start_mavproxy(opts, stuff):
         cmd.append("/cygdrive/c/Program Files (x86)/MAVProxy/mavproxy.exe")
     else:
         cmd.append("mavproxy.py")
-
+    
+    #MEET
+    cmd.extend(["--load-module", "joystick"])
+    
     if opts.hil:
         cmd.extend(["--load-module", "HIL"])
     else:
