@@ -113,6 +113,10 @@ bool Copter::set_mode(control_mode_t mode, mode_reason_t reason)
             success = crash_proof_init(ignore_checks);
             break;
 
+        case CRASH_PROOF_STABILIZE:
+            success = crash_proof_stabilize_init(ignore_checks);
+            break;
+
         default:
             success = false;
             break;
@@ -253,6 +257,10 @@ void Copter::update_flight_mode()
             crash_proof_run();
             break;
 
+        case CRASH_PROOF_STABILIZE:
+                   crash_proof_stabilize_run();
+                   break;
+
         default:
             break;
     }
@@ -332,8 +340,10 @@ bool Copter::mode_has_manual_throttle(control_mode_t mode)
     switch (mode) {
         case ACRO:
         case STABILIZE:
+        case CRASH_PROOF_STABILIZE:
         case CRASH_PROOF:
             return true;
+
         default:
             return false;
     }
@@ -431,8 +441,11 @@ void Copter::print_flight_mode(AP_HAL::BetterStream *port, uint8_t mode)
         port->print("GUIDED_NOGPS");
         break;
     case CRASH_PROOF:
-            port->printf("CRASH_PROOF");
-            break;
+        port->printf("CRASH_PROOF");
+        break;
+    case CRASH_PROOF_STABILIZE:
+        port->printf("CRASH_PROOF_STABILIZE");
+        break;
 
     default:
         port->printf("Mode(%u)", (unsigned)mode);

@@ -107,7 +107,8 @@ enum control_mode_t {
     THROW =        18,  // throw to launch mode using inertial/GPS system, no pilot input
     AVOID_ADSB =   19,  // automatic avoidance of obstacles in the macro scale - e.g. full-sized aircraft
     GUIDED_NOGPS = 20,  // guided mode but only accepts attitude and altitude
-    CRASH_PROOF =  21,  // crash proof mode for NCSU ECE 592-063 derived from STABILIZE mode.
+    CRASH_PROOF =  21,  // crash proof mode for NCSU ECE 592-063 derived from ALT_HOLD mode.
+    CRASH_PROOF_STABILIZE = 22, // crash proof mode for NCSU ECE 592-063 derived from STABILIZE mode.
 };
 
 enum mode_reason_t {
