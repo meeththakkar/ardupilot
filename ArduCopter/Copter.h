@@ -622,6 +622,21 @@ private:
     int16_t hover_roll_trim_scalar_slew;
 #endif
 
+
+    struct crash_proof_stabilize{
+    //for crash proof mode
+	float current_velocity;
+	float current_acceleration;
+	float target_stop_alt;
+	AC_PID* pid ;
+	bool pid_initialized;
+	float threshold_altitude;
+	int state;
+    }
+
+    crash_proof_stabilize_state;
+
+
     // ground effect detector
     struct {
         bool takeoff_expected;

@@ -232,6 +232,15 @@ enum AltHoldModeState {
     AltHold_Landed
 };
 
+
+// Alt_Hold states
+enum CrashProofStabilizeModeState {
+	CrashProofStabilizeFlying,
+    CrashProofStabilizeBreaking,
+    CrashProofStabilizeHolding
+};
+
+
 // Loiter states
 enum LoiterModeState {
     Loiter_MotorStopped,
