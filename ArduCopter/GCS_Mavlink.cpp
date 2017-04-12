@@ -419,7 +419,7 @@ void NOINLINE Copter::send_rangefinder(mavlink_channel_t chan)
     }
     mavlink_msg_rangefinder_send(
             chan,
-            rangefinder.distance_cm() * 0.01f,
+            rangefinder_state.alt_cm /100.0,
             rangefinder.voltage_mv() * 0.001f);
 }
 #endif
