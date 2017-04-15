@@ -1,7 +1,5 @@
 #include "Copter.h"
-#include <iostream>
-#include <fstream>
-#include <stdio.h>
+
 
 float Copter::get_surface_tracking_crash_proof_rate(int16_t target_rate,
 		float current_alt_target, float dt) {
@@ -16,7 +14,7 @@ float Copter::get_surface_tracking_crash_proof_rate(int16_t target_rate,
 	//printf("stop point at %f \n", stoppoint.z);
 
 	//oh no, this copter is going to crash, so something about it, may be sent targate rate as 0 ?.
-	printf("%f , %f , %f \n", stoppoint.z, current_alt, current_velocity);
+	//printf("%f , %f , %f \n", stoppoint.z, current_alt, current_velocity);
 
 	float gain = 1;
 	if(stoppoint.z < alt_target ){
