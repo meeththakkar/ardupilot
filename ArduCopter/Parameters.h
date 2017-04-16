@@ -547,6 +547,13 @@ public:
     // altitude at which nav control can start in takeoff
     AP_Float wp_navalt_min;
 
+    // altitude at which nav control can start in takeoff
+    AP_Float cp_pid_p;
+    AP_Float cp_pid_i;
+    AP_Float cp_pid_d;
+    AP_Float cp_min_alt;
+    AP_Float cp_max_accel;
+
     // button checking
     AP_Button button;
 

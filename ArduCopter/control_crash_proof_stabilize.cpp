@@ -21,11 +21,11 @@ bool Copter::crash_proof_stabilize_init(bool ignore_checks)
 	crash_proof_stabilize_state.current_acceleration = 0.0;
 	crash_proof_stabilize_state.target_stop_alt = 0.0;
 	if (!crash_proof_stabilize_state.pid_initialized) {
-		crash_proof_stabilize_state.pid = new AC_PID(0.5, 0.0005, 0.1, 0.7, 50,
+		crash_proof_stabilize_state.pid = new AC_PID(g2.cp_pid_p, g2.cp_pid_i, g2.cp_pid_d, 0.7, 2,
 				0.003);
 		crash_proof_stabilize_state.pid_initialized = true;
 	}
-	crash_proof_stabilize_state.threshold_altitude = 40.0;
+	crash_proof_stabilize_state.threshold_altitude = g2.cp_min_alt;
 	crash_proof_stabilize_state.state = CrashProofStabilizeFlying;
 	return true;
 
@@ -73,29 +73,30 @@ void Copter::crash_proof_stabilize_run()
     int state_old = crash_proof_stabilize_state.state;
 
 
-
     //Crash Proof Code..
 
     //TODO: filtering externalize variable.
-    crash_proof_stabilize_state.current_acceleration = crash_proof_stabilize_state.current_acceleration*0.99 + 0.01*(inertial_nav.get_velocity_z()- crash_proof_stabilize_state.current_velocity) /G_Dt;
+
     crash_proof_stabilize_state.current_velocity = inertial_nav.get_velocity_z();
 
     float current_velocity =  crash_proof_stabilize_state.current_velocity;
-    float current_acceleration = crash_proof_stabilize_state.current_acceleration;
+    //CPTODO: add non rangefinder too..
     float current_alt = rangefinder_state.alt_cm;
 
     //simulation value came to around 800
-    float acceleration = 700; // m/s/s
+    float acceleration = g2.cp_max_accel; // m/s/s
     crash_proof_stabilize_state.target_stop_alt = current_alt - current_velocity*current_velocity / (2* acceleration) ;
     float target_stop_alt = crash_proof_stabilize_state.target_stop_alt;
 
-
+    float error = crash_proof_stabilize_state.threshold_altitude- target_stop_alt;
+    float pilot_throttle_scaled_bkp = pilot_throttle_scaled;
     //decide mode...
 
-       if(state_old == CrashProofStabilizeFlying && target_stop_alt < crash_proof_stabilize_state.threshold_altitude ){
-
-    	 printf("Break, vel %f, alt %f\n", current_velocity,current_alt);
-
+       if(state_old == CrashProofStabilizeFlying
+    		   && target_stop_alt < crash_proof_stabilize_state.threshold_altitude
+    		   //adding one more clause this may remove some false transitions.
+    		   && current_velocity < 10){
+    	 //printf("Break, vel %f, alt %f\n", current_velocity,current_alt);
     	   crash_proof_stabilize_state.state = CrashProofStabilizeBreaking;
        }
 
@@ -108,7 +109,6 @@ void Copter::crash_proof_stabilize_run()
        }
 
 
-
        switch (crash_proof_stabilize_state.state){
 
        case CrashProofStabilizeFlying:
@@ -117,25 +117,23 @@ void Copter::crash_proof_stabilize_run()
 
        case CrashProofStabilizeBreaking:
            	   crash_proof_stabilize_state.pid->reset_I();
-           	  attitude_control.input_euler_angle_roll_pitch_euler_rate_yaw(0.0, 0.0, 0.0, get_smoothing_gain());
+           	   attitude_control.input_euler_angle_roll_pitch_euler_rate_yaw(0.0, 0.0, 0.0, get_smoothing_gain());
            	   pilot_throttle_scaled = 1.0;
            	   break;
 
        case CrashProofStabilizeHolding:
 
-		float pilot_throttle_scaled_bkp = pilot_throttle_scaled;
-		float effort = 0.0;
 
+		float effort = 0.0;
 		crash_proof_stabilize_state.pid->set_desired_rate(0);
-		float error = crash_proof_stabilize_state.threshold_altitude
-				- target_stop_alt;
+
 		if (error < 0) {
 			error = 0;
 			crash_proof_stabilize_state.pid->reset_I();
 		}
 		crash_proof_stabilize_state.pid->set_input_filter_all(error);
 		crash_proof_stabilize_state.pid->set_dt(G_Dt);
-		effort = crash_proof_stabilize_state.pid->get_pid();
+		effort = crash_proof_stabilize_state.pid->get_p()+crash_proof_stabilize_state.pid->get_d();
 		pilot_throttle_scaled = constrain_float(effort, 0.0, 1.0);
 		//  printf("err:%f\t eff:%f\n",error,pilot_throttle_scaled);
 
@@ -146,36 +144,15 @@ void Copter::crash_proof_stabilize_run()
        }
 
 
-/*
-    if(state_old == CrashProofStabilizeUserInputGood && target_stop_alt < crash_proof_stabilize_state.threshold_altitude ){
-    	crash_proof_stabilize_state.state = CrashProofStabilizeUserIsCrashing;
-    }
-*/
-
-
-   /* crash_proof_stabilize_state.state = CrashProofStabilizeUserIsCrashing;
-    switch (crash_proof_stabilize_state.state){
-
-    case CrashProofStabilizeUserIsCrashing:
-    	printf("%f CrashProofStabilizeUserIsCrashing\n",target_stop_alt);
-    	crash_proof_stabilize_state.pid->set_desired_rate(crash_proof_stabilize_state.threshold_altitude);
-    	crash_proof_stabilize_state.pid->set_input_filter_all(500);
-    //	effort = crash_proof_stabilize_state.pid->get_pid();
-    //	pilot_throttle_scaled = constrain_float(effort,0.0,1.0);
-    	break;
-
-    case CrashProofStabilizeUserInputGood:
-    	printf("%fCrashProofStabilizeUserInputGood\n",target_stop_alt);
-    	break;
-    }
-
-    if(state_old == CrashProofStabilizeUserIsCrashing && pilot_throttle_scaled_bkp >  pilot_throttle_scaled  ){
-          	crash_proof_stabilize_state.state = CrashProofStabilizeUserInputGood;
-          	pilot_throttle_scaled = pilot_throttle_scaled_bkp;
-       }*/
-
-   // printf("%f\t %f\t %f\t%f\t %f\n",current_velocity ,current_acceleration,target_stop_alt,current_alt,pilot_throttle_scaled);
-
     // output pilot's throttle
     attitude_control.set_throttle_out(pilot_throttle_scaled, true, g.throttle_filt);
+
+
+    if(crash_proof_stabilize_state.state == CrashProofStabilizeHolding && error <20  && pilot_throttle_scaled_bkp < 0.55){
+    	pos_control.set_alt_target_from_climb_rate_ff(0, G_Dt, true);
+    	pos_control.update_z_controller();
+    }
+
+
+
 }

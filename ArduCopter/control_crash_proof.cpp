@@ -6,7 +6,7 @@ float Copter::get_surface_tracking_crash_proof_rate(int16_t target_rate,
 
 	float alt_target = 40;
 
-	float current_alt = rangefinder_state.alt_cm;
+	//float current_alt = rangefinder_state.alt_cm;
 	float current_velocity = inertial_nav.get_velocity_z();
 
 	Vector3f stoppoint;
