@@ -1046,36 +1046,36 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
 
 
 
-      // @Param: CP_PID_I
-         // @DisplayName: MAX navigation altitude
-         // @Description: This is the altitude in meters above which for navigation can begin. This applies in auto takeoff and auto landing.
-         // @Range: 0 5
-         // @User: Standard
-         AP_GROUPINFO("CP_PID_I", 13, ParametersG2, cp_pid_i, 0),
+     // @Param: CP_PID_I
+     // @DisplayName: MAX navigation altitude
+     // @Description: This is the altitude in meters above which for navigation can begin. This applies in auto takeoff and auto landing.
+     // @Range: 0 5
+     // @User: Standard
+     AP_GROUPINFO("CP_PID_I", 13, ParametersG2, cp_pid_i, 0),
 
 
-         // @Param: CP_PID_D
-            // @DisplayName: MAX navigation altitude
-            // @Description: This is the altitude in meters above which for navigation can begin. This applies in auto takeoff and auto landing.
-            // @Range: 0 5
-            // @User: Standard
-            AP_GROUPINFO("CP_PID_D", 14, ParametersG2, cp_pid_d, 0),
+     // @Param: CP_PID_D
+     // @DisplayName: MAX navigation altitude
+     // @Description: This is the altitude in meters above which for navigation can begin. This applies in auto takeoff and auto landing.
+     // @Range: 0 5
+     // @User: Standard
+     AP_GROUPINFO("CP_PID_D", 14, ParametersG2, cp_pid_d, 0),
 
 
-            // @Param: CP_MIN_ALT
-               // @DisplayName: MAX navigation altitude
-               // @Description: This is the altitude in meters above which for navigation can begin. This applies in auto takeoff and auto landing.
-               // @Range: 0 5
-               // @User: Standard
-               AP_GROUPINFO("CP_MIN_ALT", 15, ParametersG2, cp_min_alt, 0),
+     // @Param: CP_MIN_ALT
+     // @DisplayName: MAX navigation altitude
+     // @Description: This is the altitude in meters above which for navigation can begin. This applies in auto takeoff and auto landing.
+     // @Range: 0 5
+     // @User: Standard
+     AP_GROUPINFO("CP_MIN_ALT", 15, ParametersG2, cp_min_alt, 0),
 
 
-               // @Param: CP_MAX_ACCEL
-                  // @DisplayName: MAX navigation altitude
-                  // @Description: This is the altitude in meters above which for navigation can begin. This applies in auto takeoff and auto landing.
-                  // @Range: 0 5
-                  // @User: Standard
-                  AP_GROUPINFO("CP_MAX_ACCEL", 16, ParametersG2, cp_max_accel, 0),
+     // @Param: CP_MAX_ACCEL
+     // @DisplayName: MAX navigation altitude
+     // @Description: This is the altitude in meters above which for navigation can begin. This applies in auto takeoff and auto landing.
+     // @Range: 0 5
+     // @User: Standard
+     AP_GROUPINFO("CP_MAX_ACCEL", 16, ParametersG2, cp_max_accel, 0),
 
 
     AP_GROUPEND
