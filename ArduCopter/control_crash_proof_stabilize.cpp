@@ -21,7 +21,7 @@ bool Copter::crash_proof_stabilize_init(bool ignore_checks)
 	crash_proof_stabilize_state.current_acceleration = 0.0;
 	crash_proof_stabilize_state.target_stop_alt = 0.0;
 	if (!crash_proof_stabilize_state.pid_initialized) {
-		crash_proof_stabilize_state.pid = new AC_PID(g2.cp_pid_p, g2.cp_pid_i, g2.cp_pid_d, 0.7, 2,
+		crash_proof_stabilize_state.pid = new AC_PID(g2.cp_pid_p, g2.cp_pid_i, g2.cp_pid_d, 0.2, 2,
 				0.003);
 		crash_proof_stabilize_state.pid_initialized = true;
 	}
@@ -88,9 +88,10 @@ void Copter::crash_proof_stabilize_run()
     crash_proof_stabilize_state.target_stop_alt = current_alt - current_velocity*current_velocity / (2* acceleration) ;
     float target_stop_alt = crash_proof_stabilize_state.target_stop_alt;
 
-    float error = crash_proof_stabilize_state.threshold_altitude- target_stop_alt;
+    float error = ( crash_proof_stabilize_state.threshold_altitude- target_stop_alt);
     float pilot_throttle_scaled_bkp = pilot_throttle_scaled;
     //decide mode...
+
 
        if(state_old == CrashProofStabilizeFlying
     		   && target_stop_alt < crash_proof_stabilize_state.threshold_altitude
@@ -98,13 +99,14 @@ void Copter::crash_proof_stabilize_run()
     		   && current_velocity < 10){
     	 //printf("Break, vel %f, alt %f\n", current_velocity,current_alt);
     	   crash_proof_stabilize_state.state = CrashProofStabilizeBreaking;
+    	  // AP_HAL::Print("breaking");
        }
 
-       if(state_old == CrashProofStabilizeBreaking && current_velocity > -20){
+       if(state_old == CrashProofStabilizeBreaking && current_velocity >= 0){
     	   crash_proof_stabilize_state.state = CrashProofStabilizeHolding;
        }
 
-       if(state_old == CrashProofStabilizeHolding && current_alt > crash_proof_stabilize_state.threshold_altitude*1.5){
+       if(state_old == CrashProofStabilizeHolding && current_alt > crash_proof_stabilize_state.threshold_altitude*3){
     	   crash_proof_stabilize_state.state = CrashProofStabilizeFlying;
        }
 
@@ -127,15 +129,22 @@ void Copter::crash_proof_stabilize_run()
 		float effort = 0.0;
 		crash_proof_stabilize_state.pid->set_desired_rate(0);
 
-		if (error < 0) {
+	/*	if (error < 0) {
 			error = 0;
 			crash_proof_stabilize_state.pid->reset_I();
 		}
+*/
+		//set PID gains so that we can tune it in real time.
+		crash_proof_stabilize_state.pid->kP(g2.cp_pid_p);
+		crash_proof_stabilize_state.pid->kI(g2.cp_pid_i);
+		crash_proof_stabilize_state.pid->kD(g2.cp_pid_d);
+
 		crash_proof_stabilize_state.pid->set_input_filter_all(error);
 		crash_proof_stabilize_state.pid->set_dt(G_Dt);
-		effort = crash_proof_stabilize_state.pid->get_p()+crash_proof_stabilize_state.pid->get_d();
-		pilot_throttle_scaled = constrain_float(effort, 0.0, 1.0);
+		effort = crash_proof_stabilize_state.pid->get_pid();
+		pilot_throttle_scaled = constrain_float(effort, -0.5,0.5);
 		//  printf("err:%f\t eff:%f\n",error,pilot_throttle_scaled);
+		pilot_throttle_scaled = g2.cp_pid_base+ pilot_throttle_scaled;
 
 		pilot_throttle_scaled = MAX(pilot_throttle_scaled,
 				pilot_throttle_scaled_bkp);
@@ -146,13 +155,5 @@ void Copter::crash_proof_stabilize_run()
 
     // output pilot's throttle
     attitude_control.set_throttle_out(pilot_throttle_scaled, true, g.throttle_filt);
-
-
-    if(crash_proof_stabilize_state.state == CrashProofStabilizeHolding && error <20  && pilot_throttle_scaled_bkp < 0.55){
-    	pos_control.set_alt_target_from_climb_rate_ff(0, G_Dt, true);
-    	pos_control.update_z_controller();
-    }
-
-
 
 }

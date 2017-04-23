@@ -553,6 +553,7 @@ public:
     AP_Float cp_pid_d;
     AP_Float cp_min_alt;
     AP_Float cp_max_accel;
+    AP_Float cp_pid_base;
 
     // button checking
     AP_Button button;

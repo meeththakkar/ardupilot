@@ -1078,6 +1078,14 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
      AP_GROUPINFO("CP_MAX_ACCEL", 16, ParametersG2, cp_max_accel, 0),
 
 
+     // @Param: CP_PID_BASE
+     // @DisplayName: MAX navigation altitude
+     // @Description: This is the altitude in meters above which for navigation can begin. This applies in auto takeoff and auto landing.
+     // @Range: 0 1.0
+     // @User: Standard
+     AP_GROUPINFO("CP_PID_BASE", 17, ParametersG2, cp_pid_base, 0.1),
+
+
     AP_GROUPEND
 };
 
