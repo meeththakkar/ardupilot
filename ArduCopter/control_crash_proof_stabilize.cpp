@@ -106,7 +106,7 @@ void Copter::crash_proof_stabilize_run()
     	   crash_proof_stabilize_state.state = CrashProofStabilizeHolding;
        }
 
-       if(state_old == CrashProofStabilizeHolding && current_alt > crash_proof_stabilize_state.threshold_altitude*3){
+       if(state_old == CrashProofStabilizeHolding && current_alt > crash_proof_stabilize_state.threshold_altitude*1.05){
     	   crash_proof_stabilize_state.state = CrashProofStabilizeFlying;
        }
 

@@ -1,12 +1,11 @@
 #include "Copter.h"
 
-
 float Copter::get_surface_tracking_crash_proof_rate(int16_t target_rate,
 		float current_alt_target, float dt) {
 
-	float alt_target = 40;
+	float alt_target = 75;
 
-	//float current_alt = rangefinder_state.alt_cm;
+	float current_alt = rangefinder_state.alt_cm;
 	float current_velocity = inertial_nav.get_velocity_z();
 
 	Vector3f stoppoint;
@@ -17,9 +16,10 @@ float Copter::get_surface_tracking_crash_proof_rate(int16_t target_rate,
 	//printf("%f , %f , %f \n", stoppoint.z, current_alt, current_velocity);
 
 	float gain = 1;
-	if(stoppoint.z < alt_target ){
 
-		return abs(current_velocity)*gain;
+	if (stoppoint.z < alt_target) {
+
+		return abs(current_velocity) * gain;
 
 	}
 
@@ -37,7 +37,6 @@ bool Copter::crash_proof_init(bool ignore_checks) {
 		return false;
 	}
 #endif
-
 
 	// initialize vertical speeds and leash lengths
 	pos_control.set_speed_z(-g.pilot_velocity_z_max, g.pilot_velocity_z_max);
@@ -85,7 +84,6 @@ void Copter::crash_proof_run() {
 	//-250 to 250..
 	target_climb_rate = constrain_float(target_climb_rate,
 			-g.pilot_velocity_z_max, g.pilot_velocity_z_max);
-
 
 #if FRAME_CONFIG == HELI_FRAME
 	// helicopters are held on the ground until rotor speed runup has finished
@@ -182,11 +180,12 @@ void Copter::crash_proof_run() {
 		// adjust climb rate using rangefinder
 		if (rangefinder_alt_ok()) {
 			// if rangefinder is ok, use surface tracking
-			target_climb_rate = get_surface_tracking_climb_rate(target_climb_rate, pos_control.get_alt_target(), G_Dt);
+			target_climb_rate = get_surface_tracking_climb_rate(
+					target_climb_rate, pos_control.get_alt_target(), G_Dt);
 		}
 
-		target_climb_rate = get_surface_tracking_crash_proof_rate(
-								target_climb_rate, pos_control.get_alt_target(), G_Dt);
+	//	target_climb_rate = get_surface_tracking_crash_proof_rate(
+	//			target_climb_rate, pos_control.get_alt_target(), G_Dt);
 
 		// call position controller
 		pos_control.set_alt_target_from_climb_rate_ff(target_climb_rate, G_Dt,
