@@ -62,22 +62,28 @@ void Copter::althold_run() {
 			-g.pilot_velocity_z_max, g.pilot_velocity_z_max);
 
 
+	//take backup of the target climb rate.
 	float target_climb_rate_bkp = target_climb_rate;
 
-
+	// float named target_stop_alt is calculated and represents the altitude
+	//the drone would reach if the throttle is fully applied at the time of the code executing.
+	//This is achieved using a simple parabolic calculation based on the current velocity and
+	//acceleration as below.
     float current_velocity = inertial_nav.get_velocity_z();
 	float current_alt = rangefinder_state.alt_cm;
 	float acceleration = g.pilot_accel_z; // m/s/s
 	float target_stop_alt = current_alt - current_velocity*current_velocity / (2* acceleration) ;
 
+	//we are mowing upwards so target stop alt will be very high if not infinite.
 	if(current_velocity >0 ){
 		target_stop_alt = 10000;
 	}
 
+	//
     if(target_stop_alt>= g2.cp_min_alt*2){
     	// do nothing..
     }
-    //in danger zone
+    //in danger zone ( yellow zone) where we attenuate users ability to do drastice changes to altitude.
     else if(
     	(target_stop_alt >= g2.cp_min_alt && target_stop_alt <  g2.cp_min_alt*2 )
     	||
@@ -89,15 +95,15 @@ void Copter::althold_run() {
 		//control max and min speeds with alpha.
 		//pos_control.set_speed_z(-1*alpha*g.pilot_velocity_z_max,g.pilot_velocity_z_max);
 
+
 		//target climb rate can not be below what alpha provides..
 		target_climb_rate= constrain_float(target_climb_rate, -1*g.pilot_velocity_z_max*alpha,g.pilot_velocity_z_max);
 
 	  }
-    //super danger
-
+    //super danger , only slight positive climb is allowed here.
     if(target_stop_alt < g2.cp_min_alt  || current_alt < g2.cp_min_alt)
 	  {
-		  //10 failed...
+    	  //set minimum velocity of drone to -1
 		  pos_control.set_speed_z(-1,g.pilot_velocity_z_max);
 
 		  //5 % seems to work ..
@@ -107,7 +113,6 @@ void Copter::althold_run() {
 
 	  //just override user input if its greater..
 	  target_climb_rate = MAX(target_climb_rate,target_climb_rate_bkp);
-
 
 
 #if FRAME_CONFIG == HELI_FRAME
@@ -209,20 +214,6 @@ void Copter::althold_run() {
 					target_climb_rate, pos_control.get_alt_target(), G_Dt);
 		}
 
-
-/*
-
-	  if(target_stop_alt < g2.cp_min_alt*2 && target_stop_alt > g2.cp_min_alt ){
-			  target_climb_rate = target_climb_rate * ( (g2.cp_min_alt- target_stop_alt) / g2.cp_min_alt);
-		  }
-
-
-	  if(target_stop_alt < g2.cp_min_alt && target_climb_rate < 0){
-
-		  target_climb_rate = 0;
-
-	  }
-*/
 
 
 		// call position controller
